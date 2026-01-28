@@ -40,7 +40,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // Habilita nuestra configuración de CORS con credentials
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/login", "/api/users/register").permitAll() // Públicos
+                        .requestMatchers("/api/auth/login", "/api/users/register", "/api/auth/refresh").permitAll() // publicos
+                        .requestMatchers("/api/auth/me",  "/api/auth/logout").authenticated()
                         .anyRequest().authenticated() // Todo lo demás (carreras) protegido
                 )
                 // 🛡️ Agregamos nuestro filtro antes del filtro de usuario/contraseña por defecto

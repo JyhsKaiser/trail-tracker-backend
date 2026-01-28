@@ -1,27 +1,62 @@
 services:
+  # 1. Base de Datos
   db:
-    image: mysql:8.4    #Estamos bajando una computadora miniatura que ya tiene MySQL instalado.
-    container_name: mysql-trail-container
+    image: mysql:8.4
+    container_name: mysql-trail-db
     restart: always
-    environment:    #Aquí definimos las credenciales que configuramos en el application.properties.
+    environment:
       MYSQL_DATABASE: trail
       MYSQL_ROOT_PASSWORD: admin
       MYSQL_USER: jyhs
       MYSQL_PASSWORD: 123456
-    ports:    #Conecta el puerto de esa computadora miniatura con el puerto de tu computadora real. Así Spring Boot puede entrar.
+    ports:
       - "3307:3306"
-    volumes:    #Esto es vital. Sin esto, si borras el contenedor, tus carreras de trail registradas se borrarían. El volumen hace que los datos vivan en tu disco duro, no dentro del contenedor.
+    volumes:
       - trail_data:/var/lib/mysql
+    networks:
+      - trail-net
+
+  # 2. Backend (Spring Boot)
+  backend:
+    build: . # Al estar dentro del proyecto de Spring Boot, el contexto es la carpeta actual    container_name: trail-api
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/trail?allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=jyhs
+      - SPRING_DATASOURCE_PASSWORD=123456
+    ports:
+      - "8080:8080"
+    networks:
+      - trail-net
+
+  # 3. Frontend (Angular + Nginx)
+  frontend:
+    build:
+      context: 'C:/Users/jyhsk/Proyectos Frontend/trail-tracker' # 👈 Ruta absoluta a tu proyecto de VSC
+      dockerfile: Dockerfile
+    container_name: trail-web
+    ports:
+      - "4200:80" # Mapeamos el puerto 80 de Nginx al 4200 de tu PC
+    depends_on:
+      - backend
+    networks:
+      - trail-net
+
+  # Extra: Visualizador (Solo para desarrollo)
   adminer:
-    image: adminer    # <--- Cambiado de mysql a adminer
-    container_name: adminer-trail-visualizer
-    restart: always
+    image: adminer
+    container_name: adminer-visualizer
     ports:
       - "8081:8080"
     depends_on:
-      - db            # Esto asegura que la DB levante antes que la interfaz
+      - db
+    networks:
+      - trail-net
+
+networks:
+  trail-net:
+    driver: bridge
 
 volumes:
   trail_data:
-
-#Una vez instalado Docker Desktop abrir una terminal en la carpeta de mi proyecto y escribir: docker-compose up -d

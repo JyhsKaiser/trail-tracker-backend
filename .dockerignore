@@ -1,0 +1,20 @@
+# Carpeta de compilación de Maven/Gradle
+target/
+build/
+
+# Archivos de IntelliJ o Eclipse
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# Logs y temporales
+logs/
+*.log
+.git
+.gitignore
+HELP.md
+
+# Archivos de Maven Wrapper locales
+.mvn/wrapper/maven-wrapper.jar

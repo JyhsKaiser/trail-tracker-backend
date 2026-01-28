@@ -9,6 +9,7 @@ import jyhs.trail.infrastructure.persistence.repositories.SpringDataUserReposito
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -26,6 +27,9 @@ public class RunJpaAdapter implements RunRepository {
     public Run save(Run run) {
         // 1. Mapeamos de Dominio (Record) a Entidad JPA
         RunEntity entity = new RunEntity();
+        if (run.id() != null) {
+            entity.setId(run.id()); // 👈 ESTO ES LO QUE FALTA PARA QUE SEA EDICIÓN
+        }
         entity.setName(run.name());
         entity.setDistanceKm(run.distanceKm());
         entity.setElevationGain(run.elevationGain());
@@ -48,6 +52,20 @@ public class RunJpaAdapter implements RunRepository {
                 savedEntity.getDate(),
                 savedEntity.getUser().getId()
         );
+    }
+
+    @Override
+    public Optional<Run> findById(Long id) {
+        // 1. Buscamos la entidad en la base de datos
+        return jpaRepository.findById(id)
+                .map(entity -> new Run(
+                        entity.getId(),
+                        entity.getName(),
+                        entity.getDistanceKm(),
+                        entity.getElevationGain(),
+                        entity.getDate(),
+                        entity.getUser().getId() // Mapeo manual al Record de dominio
+                ));
     }
 
     @Override

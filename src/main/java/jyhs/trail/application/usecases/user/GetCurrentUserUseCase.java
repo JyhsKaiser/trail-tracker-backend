@@ -1,5 +1,6 @@
 package jyhs.trail.application.usecases.user;
 
+import jyhs.trail.application.dto.UserResponseDTO;
 import jyhs.trail.domain.model.User;
 import jyhs.trail.domain.repository.UserRepository;
 import org.springframework.stereotype.Component;
@@ -12,8 +13,9 @@ public class GetCurrentUserUseCase {
         this.userRepository = userRepository;
     }
 
-    public User execute(String username) {
-        return userRepository.findByUsername(username)
+    public UserResponseDTO execute(String username) {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return new UserResponseDTO(user.id(), user.username(), user.email());
     }
 }

@@ -1,4 +1,4 @@
-package jyhs.trail.application.usecases.user;
+package jyhs.trail.application.usecases.auth;
 
 import jyhs.trail.domain.model.User;
 import jyhs.trail.domain.repository.UserRepository;

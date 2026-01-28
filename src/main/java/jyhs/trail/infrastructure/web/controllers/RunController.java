@@ -1,6 +1,7 @@
 package jyhs.trail.infrastructure.web.controllers;
 
 import jyhs.trail.application.usecases.run.DeleteRunUseCase;
+import jyhs.trail.application.usecases.run.EditRunUserCase;
 import jyhs.trail.application.usecases.run.GetAllRunsByUserUseCase;
 import jyhs.trail.application.usecases.run.SaveRunUseCase;
 import jyhs.trail.domain.model.Run;
@@ -19,13 +20,15 @@ public class RunController {
 
     // Inyectamos solo lo que necesitamos
     private final SaveRunUseCase saveRunUseCase;
+    private final EditRunUserCase editRunUserCase;
     private final GetAllRunsByUserUseCase getAllRunsByUserUseCase;
     private final DeleteRunUseCase deleteRunUseCase;
 
-    public RunController(SaveRunUseCase saveRunUseCase, GetAllRunsByUserUseCase getAllRunsByUserUseCase, DeleteRunUseCase deleteRunUseCase) {
+    public RunController(SaveRunUseCase saveRunUseCase, GetAllRunsByUserUseCase getAllRunsByUserUseCase, DeleteRunUseCase deleteRunUseCase, EditRunUserCase editRunUserCase) {
         this.saveRunUseCase = saveRunUseCase;
         this.getAllRunsByUserUseCase = getAllRunsByUserUseCase;
         this.deleteRunUseCase = deleteRunUseCase;
+        this.editRunUserCase = editRunUserCase;
     }
 
     @GetMapping
@@ -46,6 +49,16 @@ public class RunController {
         // Obtenemos el username de la sesión actual
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return saveRunUseCase.execute(run, username);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Run> updateRun(
+            @PathVariable Long id,
+            @RequestBody Run runRequest) {
+
+        // Tu lógica de servicio para buscar, validar que pertenezca al usuario y actualizar
+        Run updatedRun = editRunUserCase.execute(id, runRequest);
+        return ResponseEntity.ok(updatedRun);
     }
 
     @DeleteMapping("/{id}")
