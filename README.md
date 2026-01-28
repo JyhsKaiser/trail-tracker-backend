@@ -2,7 +2,7 @@
 
 Este repositorio contiene el núcleo lógico, la persistencia y la infraestructura de seguridad del sistema **Trail Tracker**. Diseñado bajo los estándares de **Clean Architecture**, garantiza un sistema desacoplado, escalable y preparado para entornos de nube como **Azure**.
 
-🔗 **Repositorio Frontend:** [Enlace a tu repo de Angular aquí]
+🔗 **Repositorio Frontend:** https://github.com/JyhsKaiser/trail-tracker-forntend.git
 
 ---
 
@@ -43,7 +43,4 @@ Para que el sistema funcione correctamente, los contenedores deben coexistir en 
 
 ### 2. Estructura de Carpetas
 Clonar ambos repositorios en carpetas hermanas para que el orquestador encuentre los contextos de construcción:
-```bash
-Proyectos/
-├── trail-tracker-backend/  # (Este repositorio)
-└── trail-tracker-frontend/  # (Repositorio Frontend)
+
