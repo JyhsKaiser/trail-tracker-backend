@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.Collections;
 
 import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
-
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -30,30 +29,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        String requestPath = request.getServletPath();
         String token = null;
 
-        if (path.contains("/api/auth/login") || path.contains("/api/users/register")) {
+        // ✅ 1. EXCLUSIÓN CORRECTA: No procesar tokens en rutas públicas
+        if (requestPath.contains("/api/auth/login") ||
+                requestPath.contains("/api/users/register") ||
+                requestPath.contains("/api/auth/refresh")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 1. Buscar la cookie "token"
+        // ✅ 2. BUSCAR COOKIE: Optimizado
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("accessToken".equals(cookie.getName())) {
                     token = cookie.getValue();
+                    break;
                 }
             }
         }
 
-        // 2. Si hay token, validarlo y autenticar
-        if (token != null && tokenService.validateToken(token)) {
+        // ✅ 3. VALIDACIÓN: Solo si el token existe y es válido
+        if (token != null && !token.isEmpty() && tokenService.validateToken(token)) {
             String username = tokenService.getUsernameFromToken(token);
-
-            // Creamos la autenticación para Spring Security
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     username, null, Collections.emptyList());
-
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
