@@ -45,9 +45,12 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // Habilita nuestra configuración de CORS con credentials
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/users/register", "/api/auth/refresh").permitAll() // publicos
-                        .requestMatchers("/api/auth/me",  "/api/auth/logout").authenticated()
-                        .anyRequest().authenticated() // Todo lo demás (carreras) protegido
+                        // 🛡️ Agregamos /api/auth/** para cubrir login y refresh de un solo golpe
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // 🛡️ Verifica si tu controlador de registro es /api/users o /api/user
+                        .requestMatchers("/api/users/register").permitAll()
+                        .requestMatchers("/api/auth/me", "/api/auth/logout").authenticated()
+                        .anyRequest().authenticated()
                 )
                 // 🛡️ Agregamos nuestro filtro antes del filtro de usuario/contraseña por defecto
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
