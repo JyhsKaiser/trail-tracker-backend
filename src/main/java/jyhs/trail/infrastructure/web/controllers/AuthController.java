@@ -50,8 +50,8 @@ public class AuthController {
         try {
             LoginResponse response = loginUserUseCase.execute(loginRequest.username(), loginRequest.password());
 
-            ResponseCookie accessCookie = createCookie("accessToken", response.accessToken(), "/");
-            ResponseCookie refreshCookie = createCookie("refreshToken", response.refreshToken(), "/api/auth/refresh");
+            ResponseCookie accessCookie = createCookie("accessToken", response.accessToken(), "/", 900000);
+            ResponseCookie refreshCookie = createCookie("refreshToken", response.refreshToken(), "/api/auth/refresh", 604800000);
 
             UserResponseDTO userResponse = getCurrentUserUseCase.execute(response.username());
 
@@ -71,7 +71,7 @@ public class AuthController {
         // 1. Validar el token en la DB y que no haya expirado
         return refreshTokenUseCase.verifyAndGenerateNewAccess(token)
                 .map(newAccessToken -> {
-                    ResponseCookie newAccessCookie = createCookie("accessToken", newAccessToken, "/");
+                    ResponseCookie newAccessCookie = createCookie("accessToken", newAccessToken, "/api/auth/refresh", 604800000);
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, newAccessCookie.toString())
                             .<Void>build();
@@ -90,25 +90,11 @@ public class AuthController {
 //                .build();
 //    }
     public ResponseEntity<Void> logout() {
-        // Para el accessToken
-        ResponseCookie delAccess = ResponseCookie.from("accessToken", "")
-                .path("/api/auth/refresh")
-                .maxAge(0)
-                .httpOnly(true)
-                .secure(true)       // OBLIGATORIO: Azure usa HTTPS y SameSite=None
-                .sameSite("None")   // OBLIGATORIO: Debe coincidir con la original
-                .build();
+        // Borrar Access Token (Path "/")
+        ResponseCookie delAccess = createCookie("accessToken", "", "/", 0);
 
-        // Para el refreshToken
-        // OJO: En tu imagen, la original tiene Path=/
-        // pero tu intento de borrado anterior creó una con Path=/api/auth/refresh
-        ResponseCookie delRefresh = ResponseCookie.from("refreshToken", "")
-                .path("/")          // Asegúrate de que este Path sea el mismo que el del login
-                .maxAge(0)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .build();
+        // Borrar Refresh Token (Path exacto "/api/auth/refresh")
+        ResponseCookie delRefresh = createCookie("refreshToken", "", "/api/auth/refresh", 0);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, delAccess.toString())
@@ -118,22 +104,16 @@ public class AuthController {
 
 
     // Helper para no repetir código de cookies
-    private ResponseCookie createCookie(String name, String value, String path) {
-//        return ResponseCookie.from(name, value)
-//                .httpOnly(true)
-//                .secure(false) // Cambiar a true en producción con HTTPS
-//                .path(path)
-//                .maxAge(name.equals("accessToken") ? 900 : 604800)
-//                .sameSite("Lax")
-//                .build();
+    private ResponseCookie createCookie(String name, String value, String path, long maxAge) {
         return ResponseCookie.from(name, value)
-                .httpOnly(true)
-                .secure(true)    // Obligatorio para SameSite=None
-                .sameSite("None") // Vital para que Azure lo acepte entre dominios
                 .path(path)
-                .maxAge(name.equals("accessToken") ? 900 : 604800)
+                .maxAge(maxAge)
+                .httpOnly(true)
+                .secure(true)       // Necesario para SameSite=None
+                .sameSite("None")   // Permite que funcione aunque el front/back difieran en subdominio
                 .build();
     }
 
-    public record LoginRequest(String username, String password) {}
+    public record LoginRequest(String username, String password) {
+    }
 }
