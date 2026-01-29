@@ -50,16 +50,14 @@ public class AuthController {
         try {
             LoginResponse response = loginUserUseCase.execute(loginRequest.username(), loginRequest.password());
 //
-            ResponseCookie accessCookie = createCookie("accessToken", response.accessToken(), "/", 900000);
-            ResponseCookie refreshCookie = createCookie("refreshToken", response.refreshToken(), "/api/auth/refresh", 604800000);
+            ResponseCookie accessCookie = createCookie("accessToken", response.accessToken(), "/", 900);
+            ResponseCookie refreshCookie = createCookie("refreshToken", response.refreshToken(), "/api/auth/refresh",604800);
 
             UserResponseDTO userResponse = getCurrentUserUseCase.execute(response.username());
 
             return ResponseEntity.ok()
-                    .headers(headers -> {
-                        headers.add(HttpHeaders.SET_COOKIE, accessCookie.toString());
-                        headers.add(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-                    })
+                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                     .body(userResponse);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -113,7 +111,7 @@ public class AuthController {
                 .maxAge(maxAge)
                 .httpOnly(true)
                 .secure(true)       // Necesario para SameSite=None
-                .sameSite("None")   // Permite que funcione aunque el front/back difieran en subdominio
+                .sameSite("Lax")   // Permite que funcione aunque el front/back difieran en subdominio
                 .build();
     }
 

@@ -33,6 +33,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+//                .csrf(csrf -> csrf
+//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // 👈 IMPORTANTE: False para que Angular la lea
+//                        .csrfTokenRequestHandler(requestHandler)
+//                )
                 .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
@@ -50,6 +54,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+//        .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class);
+//        return http.build();
 
         return http.build();
     }
