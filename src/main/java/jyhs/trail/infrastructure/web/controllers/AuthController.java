@@ -80,9 +80,35 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+//    public ResponseEntity<Void> logout() {
+//        ResponseCookie delAccess = ResponseCookie.from("accessToken", "").path("/").maxAge(0).build();
+//        ResponseCookie delRefresh = ResponseCookie.from("refreshToken", "").path("/api/auth/refresh").maxAge(0).build();
+//
+//        return ResponseEntity.ok()
+//                .header(HttpHeaders.SET_COOKIE, delAccess.toString())
+//                .header(HttpHeaders.SET_COOKIE, delRefresh.toString())
+//                .build();
+//    }
     public ResponseEntity<Void> logout() {
-        ResponseCookie delAccess = ResponseCookie.from("accessToken", "").path("/").maxAge(0).build();
-        ResponseCookie delRefresh = ResponseCookie.from("refreshToken", "").path("/api/auth/refresh").maxAge(0).build();
+        // Para el accessToken
+        ResponseCookie delAccess = ResponseCookie.from("accessToken", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(true)       // OBLIGATORIO: Azure usa HTTPS y SameSite=None
+                .sameSite("None")   // OBLIGATORIO: Debe coincidir con la original
+                .build();
+
+        // Para el refreshToken
+        // OJO: En tu imagen, la original tiene Path=/
+        // pero tu intento de borrado anterior creó una con Path=/api/auth/refresh
+        ResponseCookie delRefresh = ResponseCookie.from("refreshToken", "")
+                .path("/")          // Asegúrate de que este Path sea el mismo que el del login
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, delAccess.toString())
@@ -104,8 +130,8 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(true)    // Obligatorio para SameSite=None
                 .sameSite("None") // Vital para que Azure lo acepte entre dominios
-                .path("/")
-                .maxAge(3600)
+                .path(path)
+                .maxAge(name.equals("accessToken") ? 900 : 604800)
                 .build();
     }
 
