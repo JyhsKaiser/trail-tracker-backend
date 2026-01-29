@@ -1,8 +1,8 @@
-name: Build and Push to GHCR
+name: Build and Push Backend to GHCR
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ] # Se activa cada vez que hagas push a la rama main
 
 env:
   REGISTRY: ghcr.io
@@ -19,16 +19,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to GHCR
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # GitHub lo da automáticamente
+          password: ${{ secrets.GITHUB_TOKEN }} # Token automático de GitHub
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          # Esto generará la imagen: ghcr.io/jyhskaiser/trail-tracker-backend:latest
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
