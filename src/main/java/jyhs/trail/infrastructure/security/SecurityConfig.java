@@ -33,10 +33,11 @@ public class SecurityConfig {
         http
 //                .csrf(csrf -> csrf.disable())   // Deshabilitamos CSRF para las pruebas
                 // 1. En lugar de .disable(), configuramos el repositorio de tokens
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // 👈 IMPORTANTE: False para que Angular la lea
-                        .csrfTokenRequestHandler(requestHandler)
-                )
+//                .csrf(csrf -> csrf
+//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // 👈 IMPORTANTE: False para que Angular la lea
+//                        .csrfTokenRequestHandler(requestHandler)
+//                )
+                .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults()) // Habilita nuestra configuración de CORS con credentials
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
