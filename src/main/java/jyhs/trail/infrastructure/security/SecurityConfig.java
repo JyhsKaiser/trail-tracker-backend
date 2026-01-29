@@ -46,7 +46,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated() // Todo lo demás (carreras) protegido
                 )
                 // 🛡️ Agregamos nuestro filtro antes del filtro de usuario/contraseña por defecto
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
                 // 🛡️ Agrega esto justo después del filtro JWT
 //                .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
