@@ -56,8 +56,10 @@ public class AuthController {
             UserResponseDTO userResponse = getCurrentUserUseCase.execute(response.username());
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .headers(headers -> {
+                        headers.add(HttpHeaders.SET_COOKIE, accessCookie.toString());
+                        headers.add(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+                    })
                     .body(userResponse);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -97,7 +99,7 @@ public class AuthController {
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, delAccess.toString()) // Sin el .toString() extra
                     .header(HttpHeaders.SET_COOKIE, delRefresh.toString())
-                    .body(null);
+                    .build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
