@@ -32,30 +32,25 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        requestHandler.setCsrfRequestAttributeName(null); // 🛡️ Esto permite que Angular no tenga que enviar parámetros extra
         http
-//                .csrf(csrf -> csrf.disable())   // Deshabilitamos CSRF para las pruebas
-                // 1. En lugar de .disable(), configuramos el repositorio de tokens
-//                .csrf(csrf -> csrf
-//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // 👈 IMPORTANTE: False para que Angular la lea
-//                        .csrfTokenRequestHandler(requestHandler)
-//                )
-                .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults()) // Habilita nuestra configuración de CORS con credentials
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
+                .cors(Customizer.withDefaults())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
-                        // 🛡️ Agregamos /api/auth/** para cubrir login y refresh de un solo golpe
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // 🛡️ Verifica si tu controlador de registro es /api/users o /api/user
-                        .requestMatchers("/api/users/register").permitAll()
+                        // 🛡️ 1. Rutas específicas que REQUIEREN estar logueado
                         .requestMatchers("/api/auth/me", "/api/auth/logout").authenticated()
+
+                        // 🛡️ 2. Rutas públicas de autenticación (Login, Register, Refresh)
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/users/register").permitAll()
+
+                        // 🛡️ 3. Cualquier otra ruta requiere autenticación
                         .anyRequest().authenticated()
                 )
-                // 🛡️ Agregamos nuestro filtro antes del filtro de usuario/contraseña por defecto
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-                // 🛡️ Agrega esto justo después del filtro JWT
-//                .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
@@ -71,15 +66,16 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         configuration.setAllowCredentials(true); // 🛡️ Vital para HttpOnly Cookies
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        // Al ser una API con JWT, no necesitamos usuarios en memoria
-        return new InMemoryUserDetailsManager();
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        // Al ser una API con JWT, no necesitamos usuarios en memoria
+//        return new InMemoryUserDetailsManager();
+//    }
 }
