@@ -91,8 +91,8 @@ public class AuthController {
 //                .build();
 //    }
     public ResponseEntity<Void> logout() {
-        ResponseCookie delAccess = createCookie("accessToken", "", "/", 0);
-        ResponseCookie delRefresh = createCookie("refreshToken", "", "/", 0);
+        String delAccess = "accessToken=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None";
+        String delRefresh = "refreshToken=; Path=/api/auth/refresh; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None";
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, delAccess.toString())
                 .header(HttpHeaders.SET_COOKIE, delRefresh.toString())
