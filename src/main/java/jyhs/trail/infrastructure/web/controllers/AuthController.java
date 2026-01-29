@@ -49,7 +49,7 @@ public class AuthController {
     public ResponseEntity<UserResponseDTO> login(@RequestBody LoginRequest loginRequest) {
         try {
             LoginResponse response = loginUserUseCase.execute(loginRequest.username(), loginRequest.password());
-
+//
             ResponseCookie accessCookie = createCookie("accessToken", response.accessToken(), "/", 900000);
             ResponseCookie refreshCookie = createCookie("refreshToken", response.refreshToken(), "/api/auth/refresh", 604800000);
 
@@ -91,12 +91,16 @@ public class AuthController {
 //                .build();
 //    }
     public ResponseEntity<Void> logout() {
-        String delAccess = "accessToken=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None";
-        String delRefresh = "refreshToken=; Path=/api/auth/refresh; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None";
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, delAccess) // Sin el .toString() extra
-                .header(HttpHeaders.SET_COOKIE, delRefresh)
-                .build();
+        try {
+            ResponseCookie delAccess = createCookie("accessToken", "", "/", 0);
+            ResponseCookie delRefresh = createCookie("refreshToken", "", "/api/auth/refresh", 0);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, delAccess.toString()) // Sin el .toString() extra
+                    .header(HttpHeaders.SET_COOKIE, delRefresh.toString())
+                    .body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
 
