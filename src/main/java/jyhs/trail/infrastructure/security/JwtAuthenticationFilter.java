@@ -14,6 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
+import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -29,6 +31,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String token = null;
+
+        if (path.contains("/api/auth/login") || path.contains("/api/users/register")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 1. Buscar la cookie "token"
         if (request.getCookies() != null) {
