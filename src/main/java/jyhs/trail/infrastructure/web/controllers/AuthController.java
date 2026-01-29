@@ -93,12 +93,19 @@ public class AuthController {
 
     // Helper para no repetir código de cookies
     private ResponseCookie createCookie(String name, String value, String path) {
+//        return ResponseCookie.from(name, value)
+//                .httpOnly(true)
+//                .secure(false) // Cambiar a true en producción con HTTPS
+//                .path(path)
+//                .maxAge(name.equals("accessToken") ? 900 : 604800)
+//                .sameSite("Lax")
+//                .build();
         return ResponseCookie.from(name, value)
                 .httpOnly(true)
-                .secure(false) // Cambiar a true en producción con HTTPS
-                .path(path)
-                .maxAge(name.equals("accessToken") ? 900 : 604800)
-                .sameSite("Lax")
+                .secure(true)    // Obligatorio para SameSite=None
+                .sameSite("None") // Vital para que Azure lo acepte entre dominios
+                .path("/")
+                .maxAge(3600)
                 .build();
     }
 
