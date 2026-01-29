@@ -71,7 +71,8 @@ public class AuthController {
         // 1. Validar el token en la DB y que no haya expirado
         return refreshTokenUseCase.verifyAndGenerateNewAccess(token)
                 .map(newAccessToken -> {
-                    ResponseCookie newAccessCookie = createCookie("accessToken", newAccessToken, "/api/auth/refresh", 604800000);
+                    ResponseCookie newAccessCookie = createCookie("accessToken", newAccessToken, "/", 900000); // 15 min
+
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, newAccessCookie.toString())
                             .<Void>build();
@@ -90,10 +91,7 @@ public class AuthController {
 //                .build();
 //    }
     public ResponseEntity<Void> logout() {
-        // Borrar Access Token (Path "/")
         ResponseCookie delAccess = createCookie("accessToken", "", "/", 0);
-
-        // Borrar Refresh Token (Path exacto "/api/auth/refresh")
         ResponseCookie delRefresh = createCookie("refreshToken", "", "/api/auth/refresh", 0);
 
         return ResponseEntity.ok()
