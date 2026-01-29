@@ -111,7 +111,7 @@ public class AuthController {
                 .maxAge(maxAge)
                 .httpOnly(true)
                 .secure(true)       // Necesario para SameSite=None
-                .sameSite("Lax")   // Permite que funcione aunque el front/back difieran en subdominio
+                .sameSite("None")   // Permite que funcione aunque el front/back difieran en subdominio
                 .build();
     }
 
