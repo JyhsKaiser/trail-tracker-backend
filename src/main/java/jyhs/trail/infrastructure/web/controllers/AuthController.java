@@ -92,8 +92,7 @@ public class AuthController {
 //    }
     public ResponseEntity<Void> logout() {
         ResponseCookie delAccess = createCookie("accessToken", "", "/", 0);
-        ResponseCookie delRefresh = createCookie("refreshToken", "", "/api/auth/refresh", 0);
-
+        ResponseCookie delRefresh = createCookie("refreshToken", "", "/", 0);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, delAccess.toString())
                 .header(HttpHeaders.SET_COOKIE, delRefresh.toString())
