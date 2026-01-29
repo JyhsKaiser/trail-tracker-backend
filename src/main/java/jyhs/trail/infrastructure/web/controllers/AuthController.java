@@ -92,7 +92,7 @@ public class AuthController {
     public ResponseEntity<Void> logout() {
         // Para el accessToken
         ResponseCookie delAccess = ResponseCookie.from("accessToken", "")
-                .path("/")
+                .path("/api/auth/refresh")
                 .maxAge(0)
                 .httpOnly(true)
                 .secure(true)       // OBLIGATORIO: Azure usa HTTPS y SameSite=None
