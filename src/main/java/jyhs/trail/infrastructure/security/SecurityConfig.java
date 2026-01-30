@@ -30,7 +30,6 @@ import java.util.List;
 public class SecurityConfig {
 
 
-
     private final JwtAuthenticationFilter jwtAuthFilter;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
@@ -39,12 +38,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null); // 🛡️ Esto permite que Angular no tenga que enviar parámetros extra
+
         http
-//                .csrf(csrf -> csrf
-//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // 👈 IMPORTANTE: False para que Angular la lea
-//                        .csrfTokenRequestHandler(requestHandler)
-//                )
-                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // 👈 IMPORTANTE: False para que Angular la lea
+                        .csrfTokenRequestHandler(requestHandler)
+                )
+//                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -60,9 +62,8 @@ public class SecurityConfig {
                         // 🛡️ 3. Cualquier otra ruta requiere autenticación
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-//        .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class);
-//        return http.build();
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -91,9 +92,4 @@ public class SecurityConfig {
         return source;
     }
 
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        // Al ser una API con JWT, no necesitamos usuarios en memoria
-//        return new InMemoryUserDetailsManager();
-//    }
 }
