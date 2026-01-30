@@ -41,9 +41,17 @@ public class SecurityConfig {
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName(null); // 🛡️ Esto permite que Angular no tenga que enviar parámetros extra
 
+        // 1. Configuramos el repositorio con el Customizer para SameSite
+        CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        tokenRepository.setCookieCustomizer(cookie -> {
+            cookie.sameSite("None"); // O "None" si el frontend está en otro dominio (requiere Secure=true)
+            cookie.path("/");       // Asegura que esté disponible en toda la app
+            cookie.secure(true); // Descomenta esto si usas HTTPS (obligatorio para SameSite=None)
+        });
+
         http
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // 👈 IMPORTANTE: False para que Angular la lea
+                        .csrfTokenRepository(tokenRepository) // 👈 IMPORTANTE: False para que Angular la lea
                         .csrfTokenRequestHandler(requestHandler)
                 )
 //                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
