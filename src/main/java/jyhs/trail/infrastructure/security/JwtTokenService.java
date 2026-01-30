@@ -65,4 +65,13 @@ public class JwtTokenService implements TokenService {
             return false;
         }
     }
+
+    // Agrega estos getters para que el Controller los use
+    public long getJwtExpirationInSeconds() {
+        return jwtExpiration / 1000;
+    }
+
+    public long getRefreshExpirationInSeconds() {
+        return refreshExpiration / 1000;
+    }
 }

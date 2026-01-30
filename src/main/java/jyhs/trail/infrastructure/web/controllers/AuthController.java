@@ -6,6 +6,8 @@ import jyhs.trail.application.usecases.auth.RefreshTokenUseCase;
 import jyhs.trail.application.usecases.auth.RegisterUserUseCase;
 import jyhs.trail.application.usecases.user.GetCurrentUserUseCase;
 import jyhs.trail.application.dto.UserResponseDTO;
+import jyhs.trail.infrastructure.security.JwtTokenService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -15,22 +17,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final LoginUserUseCase loginUserUseCase;
-    private final RegisterUserUseCase registerUserUseCase;
+    private final JwtTokenService jwtTokenService;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final GetCurrentUserUseCase getCurrentUserUseCase;
 
-    public AuthController(LoginUserUseCase loginUserUseCase,
-                          RegisterUserUseCase registerUserUseCase,
-                          RefreshTokenUseCase refreshTokenUseCase,
-                          GetCurrentUserUseCase getCurrentUserUseCase) {
-        this.loginUserUseCase = loginUserUseCase;
-        this.registerUserUseCase = registerUserUseCase;
-        this.refreshTokenUseCase = refreshTokenUseCase;
-        this.getCurrentUserUseCase = getCurrentUserUseCase;
-    }
 
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> getCurrentUser() {
@@ -50,8 +44,8 @@ public class AuthController {
         try {
             LoginResponse response = loginUserUseCase.execute(loginRequest.username(), loginRequest.password());
 //
-            ResponseCookie accessCookie = createCookie("accessToken", response.accessToken(), "/", 900);
-            ResponseCookie refreshCookie = createCookie("refreshToken", response.refreshToken(), "/api/auth/refresh",604800);
+            ResponseCookie accessCookie = createCookie("accessToken", response.accessToken(), "/", jwtTokenService.getJwtExpirationInSeconds());
+            ResponseCookie refreshCookie = createCookie("refreshToken", response.refreshToken(), "/api/auth/refresh",jwtTokenService.getRefreshExpirationInSeconds());
 
             UserResponseDTO userResponse = getCurrentUserUseCase.execute(response.username());
 
@@ -71,7 +65,7 @@ public class AuthController {
         // 1. Validar el token en la DB y que no haya expirado
         return refreshTokenUseCase.verifyAndGenerateNewAccess(token)
                 .map(newAccessToken -> {
-                    ResponseCookie newAccessCookie = createCookie("accessToken", newAccessToken, "/", 900000); // 15 min
+                    ResponseCookie newAccessCookie = createCookie("accessToken", newAccessToken, "/", jwtTokenService.getJwtExpirationInSeconds()); // 15 min
 
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, newAccessCookie.toString())
