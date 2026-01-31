@@ -55,11 +55,11 @@ public class SecurityConfig {
 
 
         http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(tokenRepository) // 👈 IMPORTANTE: False para que Angular la lea
-                        .csrfTokenRequestHandler(requestHandler)
-                )
-//                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
+//                .csrf(csrf -> csrf
+//                        .csrfTokenRepository(tokenRepository) // 👈 IMPORTANTE: False para que Angular la lea
+//                         .csrfTokenRequestHandler(requestHandler)
+//                )
+                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
