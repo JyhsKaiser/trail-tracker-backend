@@ -75,7 +75,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
+                .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class);
 
 
         return http.build();
@@ -96,9 +96,10 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of(allowedOrigins)); // Tu puerto de Angular
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(List.of("X-XSRF-TOKEN"));
         configuration.setAllowCredentials(true); // 🛡️ Vital para HttpOnly Cookies
-        configuration.setMaxAge(3600L);
+//        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
