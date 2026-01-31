@@ -38,8 +38,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        requestHandler.setCsrfRequestAttributeName(null); // 🛡️ Esto permite que Angular no tenga que enviar parámetros extra
 
         // 1. Configuramos el repositorio con el Customizer para SameSite
         CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
@@ -49,12 +47,16 @@ public class SecurityConfig {
             cookie.secure(true); // Descomenta esto si usas HTTPS (obligatorio para SameSite=None)
         });
 
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+// Esto obliga a Spring a validar el token usando el Header X-XSRF-TOKEN que envía Angular
+        requestHandler.setCsrfRequestAttributeName(null); // 🛡️ Esto permite que Angular no tenga que enviar parámetros extra
+
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/auth/login") // 👈 Excluye el login temporalmente
                         .csrfTokenRepository(tokenRepository) // 👈 IMPORTANTE: False para que Angular la lea
                         .csrfTokenRequestHandler(requestHandler)
                 )
+                .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class)
 //                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
@@ -71,8 +73,8 @@ public class SecurityConfig {
                         // 🛡️ 3. Cualquier otra ruta requiere autenticación
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
