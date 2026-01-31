@@ -39,25 +39,27 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+// Esto obliga a Spring a validar el token usando el Header X-XSRF-TOKEN que envía Angular
+        requestHandler.setCsrfRequestAttributeName(null); // 🛡️ Esto permite que Angular no tenga que enviar parámetros extra
         // 1. Configuramos el repositorio con el Customizer para SameSite
         CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         tokenRepository.setCookieCustomizer(cookie -> {
             cookie.sameSite("None"); // O "None" si el frontend está en otro dominio (requiere Secure=true)
             cookie.path("/");       // Asegura que esté disponible en toda la app
             cookie.secure(true); // Descomenta esto si usas HTTPS (obligatorio para SameSite=None)
+
+//            cookie.sameSite("Lax");// Para local (HTTP), usamos Lax. Para producción (Azure + HTTPS), usaremos None.
+//            cookie.path("/");
+//            cookie.secure(false);// En local ponlo en FALSE si no usas HTTPS. En Azure debe ser TRUE.
         });
 
-        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-// Esto obliga a Spring a validar el token usando el Header X-XSRF-TOKEN que envía Angular
-        requestHandler.setCsrfRequestAttributeName(null); // 🛡️ Esto permite que Angular no tenga que enviar parámetros extra
 
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(tokenRepository) // 👈 IMPORTANTE: False para que Angular la lea
                         .csrfTokenRequestHandler(requestHandler)
                 )
-
 //                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
@@ -96,10 +98,9 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of(allowedOrigins)); // Tu puerto de Angular
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setExposedHeaders(List.of("X-XSRF-TOKEN"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         configuration.setAllowCredentials(true); // 🛡️ Vital para HttpOnly Cookies
-//        configuration.setMaxAge(3600L);
+
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
