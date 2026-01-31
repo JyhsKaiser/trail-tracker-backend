@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.stereotype.Component;
@@ -56,7 +57,7 @@ public class SecurityConfig {
                         .csrfTokenRepository(tokenRepository) // 👈 IMPORTANTE: False para que Angular la lea
                         .csrfTokenRequestHandler(requestHandler)
                 )
-                .addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class)
+
 //                .csrf(csrf -> csrf.disable()) // Deshabilitado temporalmente para Azure
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
@@ -73,7 +74,8 @@ public class SecurityConfig {
                         // 🛡️ 3. Cualquier otra ruta requiere autenticación
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
 
         return http.build();
