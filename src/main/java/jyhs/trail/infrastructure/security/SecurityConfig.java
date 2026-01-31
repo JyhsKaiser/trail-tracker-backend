@@ -51,6 +51,7 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/auth/login") // 👈 Excluye el login temporalmente
                         .csrfTokenRepository(tokenRepository) // 👈 IMPORTANTE: False para que Angular la lea
                         .csrfTokenRequestHandler(requestHandler)
                 )
