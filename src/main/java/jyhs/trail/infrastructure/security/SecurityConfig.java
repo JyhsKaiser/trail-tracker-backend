@@ -40,7 +40,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-// Esto obliga a Spring a validar el token usando el Header X-XSRF-TOKEN que envía Angular
         requestHandler.setCsrfRequestAttributeName(null); // 🛡️ Esto permite que Angular no tenga que enviar parámetros extra
         // 1. Configuramos el repositorio con el Customizer para SameSite
         CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
